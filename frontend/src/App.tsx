@@ -1,24 +1,32 @@
-import { useState } from 'react'
-import Header from './components/layout/Header'
-import ResumeUpload from './components/resume/ResumeUpload'
-import ResumeAnalysis from './components/resume//ResumeAnalysis'
-import { Resume } from './types'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Navigation from './components/layout/Navigation';
+import Features from './components/features/Features';
+import TemplateSelector from './components/resume/TemplateSelector';
+import ResumeUpload from './components/resume/ResumeUpload';
+//import Login from './components/auth/Login';
+//import Register from './components/auth/Register';
+import { Resume } from './types';
 
 function App() {
-  const [currentResume, setCurrentResume] = useState<Resume | null>(null)
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      <main className="container mx-auto px-4 py-8">
-        {!currentResume ? (
-          <ResumeUpload onUploadComplete={setCurrentResume} />
-        ) : (
-          <ResumeAnalysis resume={currentResume} />
-        )}
-      </main>
-    </div>
-  )
+    <Router>
+      <div className="min-h-screen bg-gray-50">
+        <Navigation />
+        <main>
+          <Routes>
+            <Route path="/" element={<ResumeUpload onUploadComplete={function (resume: Resume): void {
+              throw new Error('Function not implemented.');
+            } } />} />
+            <Route path="/features" element={<Features />} />
+            <Route path="/templates" element={<TemplateSelector />} />
+            <Route path="/upload" element={<ResumeUpload onUploadComplete={function (resume: Resume): void {
+              throw new Error('Function not implemented.');
+            } } />} />
+          </Routes>
+        </main>
+      </div>
+    </Router>
+  );
 }
 
-export default App
+export default App;
