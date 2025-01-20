@@ -1,16 +1,17 @@
 import { useState } from 'react'
 import { ChevronUp, ChevronDown, Award, AlertCircle, CheckCircle } from 'lucide-react'
-import type { Resume, CompanyScore } from '../../types'
+import type { Resume, CompanyScore, ResumeCandidate, ResumeAnalysis } from '../../types'
 
 interface ResumeAnalysisProps {
   resume: Resume;
+  candidate: Partial<ResumeCandidate>;
 }
 
-const ResumeAnalysis = ({ resume }: ResumeAnalysisProps) => {
+const ResumeAnalysis: React.FC<ResumeAnalysisProps> = ({ resume, candidate }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'companies' | 'improvements'>('overview')
 
   // Mock data - replace with actual API data later
-  const mockAnalysis = {
+  const mockAnalysis: ResumeAnalysis = {
     overallScore: 85,
     companyScores: [
       {
@@ -43,7 +44,7 @@ const ResumeAnalysis = ({ resume }: ResumeAnalysisProps) => {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-        <h2 className="text-2xl font-bold mb-4">Resume Analysis</h2>
+        <h2 className="text-2xl font-bold mb-4">Resume Analysis for {candidate.name ?? 'Unknown'}</h2>
         
         {/* Tabs */}
         <div className="flex space-x-4 border-b mb-6">

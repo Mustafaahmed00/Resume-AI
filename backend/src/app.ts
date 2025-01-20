@@ -1,4 +1,4 @@
-import express, { Express } from 'express';
+import express, { Express, Request, Response, NextFunction, ErrorRequestHandler } from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import path from 'path';
@@ -6,34 +6,54 @@ import fs from 'fs';
 import config from './config';
 import authRoutes from './routes/authRoutes';
 import resumeRoutes from './routes/resumeRoutes';
+import { MulterError } from 'multer';
 
 const app: Express = express();
 
-// Middleware
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
+}));
 
-// Create uploads directory if it doesn't exist
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
 const uploadDir = path.join(__dirname, '../uploads');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-// Serve uploads directory
 app.use('/uploads', express.static(uploadDir));
 
-// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/resume', resumeRoutes);
 
-// Error handling middleware
-app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err.stack);
-  res.status(500).json({ message: 'Something went wrong!' });
-});
+// Error handling middleware with void return type
+const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
+  console.error('Error details:', {
+    message: err.message,
+    stack: err.stack,
+    name: err.name
+  });
+  
+  if (err instanceof MulterError) {
+    res.status(400).json({ 
+      message: 'File upload error',
+      details: err.message 
+    });
+    return;
+  }
+  
+  res.status(500).json({ 
+    message: 'Something went wrong!',
+    details: process.env.NODE_ENV === 'development' ? err.message : undefined
+  });
+};
 
-// Connect to MongoDB and start server
+app.use(errorHandler);
+
 const startServer = async () => {
   try {
     await mongoose.connect(config.mongoUri);
@@ -41,6 +61,7 @@ const startServer = async () => {
     
     app.listen(config.port, () => {
       console.log(`Server is running on port ${config.port}`);
+      console.log(`CORS enabled for origin: http://localhost:5173`);
     });
   } catch (error) {
     console.error('MongoDB connection error:', error);
