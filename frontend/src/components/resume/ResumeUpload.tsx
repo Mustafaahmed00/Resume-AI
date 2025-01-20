@@ -5,7 +5,11 @@ import { useDropzone } from 'react-dropzone';
 import api from '../../services/api';
 import type { Resume } from '../../types';
 
-const ResumeUpload = () => {
+interface ResumeUploadProps {
+  onUploadSuccess?: (resume: Resume) => void;
+}
+
+const ResumeUpload: React.FC<ResumeUploadProps> = ({ onUploadSuccess }) => {
   const navigate = useNavigate();
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -36,8 +40,22 @@ const ResumeUpload = () => {
     setError(null);
     const formData = new FormData();
     formData.append('resume', fileToUpload);
-
+  
+    console.log('Attempting to upload file:', {
+      name: fileToUpload.name,
+      size: fileToUpload.size,
+      type: fileToUpload.type
+    });
+  
     try {
+      // Log request details
+      console.log('Upload request configuration:', {
+        url: '/resume/upload',
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+  
       const response = await api.post<{ resume: Resume }>('/resume/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -49,11 +67,21 @@ const ResumeUpload = () => {
           }
         },
       });
-
-      // Navigate to analysis page after successful upload
+  
+      console.log('Upload response:', response.data);
+      
+      // Call onUploadSuccess if provided
+      if (onUploadSuccess) {
+        onUploadSuccess(response.data.resume);
+      }
+      
       navigate(`/analysis/${response.data.resume.id}`);
     } catch (err: any) {
-      console.error('Upload error:', err);
+      console.error('Detailed upload error:', {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status
+      });
       setError(err.response?.data?.message || 'Failed to upload resume. Please try again.');
     } finally {
       setLoading(false);

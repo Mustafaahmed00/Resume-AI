@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useState } from 'react';
 import Navigation from './components/layout/Navigation';
 import Features from './components/features/Features';
@@ -6,16 +6,11 @@ import TemplateSelector from './components/resume/TemplateSelector';
 import ResumeUpload from './components/resume/ResumeUpload';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
-import { Resume } from './types';
+import ResumeAnalysis from './components/resume/ResumeAnalysis';
+import type { Resume, ResumeCandidate } from './types';
 
 function App() {
-  const [uploadedResume, setUploadedResume] = useState<Resume | null>(null);
-
-  const handleUploadComplete = (resume: Resume) => {
-    setUploadedResume(resume);
-    // You can add navigation or other logic here
-    console.log('Resume uploaded:', resume);
-  };
+  const [currentResume, setCurrentResume] = useState<Resume | null>(null);
 
   return (
     <Router>
@@ -23,18 +18,31 @@ function App() {
         <Navigation />
         <main>
           <Routes>
-            <Route 
-              path="/" 
-              element={<ResumeUpload />} 
+            <Route
+              path="/"
+              element={<ResumeUpload onUploadSuccess={setCurrentResume} />}
+            />
+            <Route
+              path="/upload"
+              element={<ResumeUpload onUploadSuccess={setCurrentResume} />}
             />
             <Route path="/features" element={<Features />} />
             <Route path="/templates" element={<TemplateSelector />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route 
-              path="/upload" 
-              element={<ResumeUpload />} 
-            />
+            <Route
+  path="/analysis/:resumeId"
+  element={
+    currentResume ? (
+      <ResumeAnalysis
+        resume={currentResume}
+        candidate={{ name: currentResume.name }}
+      />
+    ) : (
+      <Navigate to="/upload" replace />
+    )
+  }
+/>
           </Routes>
         </main>
       </div>

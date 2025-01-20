@@ -1,23 +1,32 @@
 export interface Resume {
+  name: string;
   id?: string;
   fileName: string;
   fileUrl: string;
-  analysis?: {
-    overallScore: number;
-    companyScores: Array<{
-      company: string;
-      score: number;
-      strengths: string[];
-      weaknesses: string[];
-    }>;
-    improvements: Array<{
-      section: string;
-      suggestions: string[];
-      priority: 'high' | 'medium' | 'low';
-    }>;
-  };
+  analysis?: ResumeAnalysis;
   createdAt?: Date;
   updatedAt?: Date;
+}
+export interface ResumeCandidate {
+  name: string;
+}
+export interface ResumeAnalysis {
+  overallScore: number;
+  companyScores: CompanyScore[];
+  improvements: Improvement[];
+}
+
+export interface CompanyScore {
+  company: string;
+  score: number;
+  strengths: string[];
+  weaknesses: string[];
+}
+
+export interface Improvement {
+  section: string;
+  suggestions: string[];
+  priority: 'high' | 'medium' | 'low';
 }
 
 export interface User {
